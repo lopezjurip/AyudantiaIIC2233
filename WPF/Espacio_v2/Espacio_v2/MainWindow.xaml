@@ -1,0 +1,10 @@
+﻿<Window x:Class="RecursionPRO.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Space" Height="600" Width="800">
+    <Canvas Name="SpaceCanvas" >
+        <Canvas.Background>
+            <ImageBrush ImageSource="Imagenes/space.jpg"/>
+        </Canvas.Background>
+    </Canvas>
+</Window>
