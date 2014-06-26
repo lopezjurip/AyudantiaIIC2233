@@ -1,0 +1,14 @@
+﻿<Window x:Class="Chat2___Client.Chat"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Chat" Height="374" Width="341.334">
+    <Grid>
+        <TextBox Name="textBox_input" Margin="10,0,109.667,9.667" TextWrapping="Wrap" Text="" Height="23" VerticalAlignment="Bottom"/>
+        <Button Name="button_send" Content="Enviar" Margin="0,0,17.667,9.667" HorizontalAlignment="Right" Width="75" Height="23" VerticalAlignment="Bottom"/>
+        <Separator Margin="10,0,9.667,32.667" Height="16" VerticalAlignment="Bottom"/>
+        <ScrollViewer Margin="10,10,9.667,48.667" >
+            <StackPanel x:Name="stackPanel_mensajes" Background="Azure"/>
+        </ScrollViewer>
+
+    </Grid>
+</Window>
