@@ -1,0 +1,20 @@
+- Se juega con las teclas flecha.
+- Se cae el programa apropósito, se entrega la solucion que es un heredero de la clase con el problema y se especializa en arreglar el error.
+- El error está en:
+
+protected virtual bool z_hayUnZombieEnEsaCoordenada(Coords arg)
+        {
+            if(arg.Equals(jugadorActual.Coordenadas))
+                return true;
+
+            // Si no nos importa que hayan 2 o más zombies en la misma celda:
+            // return false;
+
+            foreach (Zombie z in zombiesActuales) { // EN ESTE FOREACH }
+
+- Para utilizar la clase sin error se debe des-comentar una linea de código en el MainWindow.xaml.cs (ver código)
+- Me costó harto hacer el programa, es difícil sincronizar threads.
+- Por favor véanlo y analícenlo, les será de gran utilidad.
+
+- Cualquier duda a: pelopez2@uc.cl
+- Patricio López.
