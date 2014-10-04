@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+// Por Patricio López (pelopez2@uc.cl)
+
 namespace MazoIngles
 {
     class Program
@@ -13,29 +15,43 @@ namespace MazoIngles
             Mazo mazo = new Mazo();
             Console.WriteLine(mazo.ToString());
 
-            Console.WriteLine("Presione cualquier tecla para revolverlo.");
+            EsperarInputUsuario("Presione cualquier tecla para revolverlo.");
+            mazo.Revolver();
+
+            EsperarInputUsuario("Presione cualquier tecla para iterar sobre el mazo.");
+            foreach (Carta carta in mazo) // Como Mazo implementa IEnumerable podemos usar foreach sobre el.
+                Console.WriteLine(carta);
+
+            EsperarInputUsuario("Presione cualquier tecla para salir.");
+        }
+
+        /// <summary>
+        /// Muestra un mensaje en consola y espera a que el usuario presione una tecla.
+        /// </summary>
+        /// <param name="mensaje"></param>
+        static void EsperarInputUsuario(String mensaje)
+        {
+            Console.WriteLine(mensaje);
             Console.ReadKey(true);
             Console.Clear();
-
-            mazo.Revolver();
-            Console.WriteLine(mazo.ToString());
-
-            Console.WriteLine("Presione cualquier tecla para salir.");
-            Console.ReadKey(true);
         }
     }
 
     /* ¿Qué es una enum?
      * http://msdn.microsoft.com/es-es/library/sbbt4032.aspx
+     * En este caso 'Pica' equivale al 0.
      */
     enum Naipe 
     { 
         Pica, Corazon, Diamante, Trebol 
     };
 
+    /* En este caso como declaro que 'As' = 1, entonces 'Dos' continua la secuncia y 
+     * por ende equivale a 2.
+     */
     enum Numero
     {
-        As, Dos, Tres, Cuatro, Cinco,
+        As = 1, Dos, Tres, Cuatro, Cinco,
         Seis, Siete, Ocho, Nueve, Dies,
         Jota, Queen, Rey
     };
@@ -73,7 +89,7 @@ namespace MazoIngles
         }
     }
 
-    class Mazo
+    class Mazo : IEnumerable<Carta>
     {
         /// <summary>
         /// Cartas para cada pica.
@@ -135,7 +151,7 @@ namespace MazoIngles
         protected List<Carta> CrearCartasInteligente(Naipe pica)
         {
             List<Carta> cartas = new List<Carta>();
-            for (int n = 0; n < CARTAS_POR_PICA; n++)
+            for (int n = 1; n <= CARTAS_POR_PICA; n++)
             {
                 Numero num = (Numero)n; // Una enumeracion son números (int) ;)
                 cartas.Add(new Carta(pica, num));
@@ -186,5 +202,23 @@ namespace MazoIngles
 
             return builder.ToString();
         }
+
+
+        #region Implementacion de IEnumarable
+
+        public IEnumerator<Carta> GetEnumerator()
+        {
+            foreach (Carta carta in baraja)
+            {
+                yield return carta;
+            }
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
+
+        #endregion
     }
 }
