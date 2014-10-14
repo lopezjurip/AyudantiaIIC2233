@@ -39,15 +39,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Alfil.cs" />
-    <Compile Include="Caballo.cs" />
-    <Compile Include="Logic.cs" />
-    <Compile Include="Peon.cs" />
+    <Compile Include="Color.cs" />
+    <Compile Include="Coordenada.cs" />
+    <Compile Include="Piezas\Alfil.cs" />
+    <Compile Include="Piezas\Caballo.cs" />
+    <Compile Include="NucleoInteligente.cs" />
+    <Compile Include="Piezas\Peon.cs" />
     <Compile Include="PiezaAjedrez.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Reina.cs" />
-    <Compile Include="Rey.cs" />
-    <Compile Include="Torre.cs" />
+    <Compile Include="Piezas\Reina.cs" />
+    <Compile Include="Piezas\Rey.cs" />
+    <Compile Include="Piezas\Torre.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
