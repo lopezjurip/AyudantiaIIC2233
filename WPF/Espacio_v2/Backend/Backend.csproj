@@ -45,7 +45,6 @@
     <Compile Include="ObjetoEspacial.cs" />
     <Compile Include="Subclasese ObjetoEspacial\Planeta.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Subclasese ObjetoEspacial\BlackHole.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

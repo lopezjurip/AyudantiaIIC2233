@@ -13,6 +13,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Backend;
+using System.Windows.Threading;
+
+// Patricio López (pelopez2@uc.cl)
 
 namespace RecursionPRO
 {
@@ -21,41 +24,67 @@ namespace RecursionPRO
     /// </summary>
     public partial class MainWindow : Window
     {
-        // Nosotros
-        private Nave nave;
+        /// <summary>
+        /// Intervalo en milisegundos
+        /// </summary>
+        private const int TICKS_INTERVAL = 20;
 
-        // Referencia al backend.
-        private Espacio espacio;
+        /// <summary>
+        /// En pixeles.
+        /// </summary>
+        private const int DIMENSION_NAVE = 50;
 
-        // otros
-        private double x_anterior, y_anterior;
-        private const int dimensionNave = 50;
+        /// <summary>
+        /// Nosotros!
+        /// </summary>
+        private Nave MiNave { get; set; }
+
+        /// <summary>
+        /// Objeto espacio del backend.
+        /// </summary>
+        private Espacio MiEspacio { get; set; }
+
+        
 
         public MainWindow()
         {
             InitializeComponent();
-            this.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen; // Programa aparece al centro de la pantalla
-            this.WindowStyle = System.Windows.WindowStyle.ThreeDBorderWindow; // Quiero una ventana con bordes más marcados.
+
+            // Programa aparece al centro de la pantalla
+            this.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
+ 
+            // Quiero una ventana con bordes más marcados.
+            this.WindowStyle = System.Windows.WindowStyle.ThreeDBorderWindow;
 
             // Espacio es una clase del Backend, por aquí nos comunicaremos
-            espacio = new Espacio(this.Width, this.Height);
+            MiEspacio = new Espacio(this.Width, this.Height);
            
-            // Creamos la nave
-            nave = new Nave();
-            nave.Height = nave.Width = dimensionNave;
-            Canvas.SetLeft(nave, 20);
-            Canvas.SetTop(nave, 20);
-            SpaceCanvas.Children.Add(nave);
+            // Creamos la nave, no necesita nada en el backend pues no tiene nada de lógica importante.
+            MiNave = new Nave();
+            MiNave.Height = MiNave.Width = DIMENSION_NAVE;
+            Canvas.SetLeft(MiNave, this.Width/2);
+            Canvas.SetTop(MiNave, this.Height/2);
+            SpaceCanvas.Children.Add(MiNave);
 
             // Escondemos el mouse
             Mouse.OverrideCursor = Cursors.None;
 
-            /* Suscripcion de eventos */
+            // Suscripcion de eventos
             SpaceCanvas.MouseMove += SpaceCanvas_MouseMove; // El mouse se mueve dentro del Canvas
-            espacio.naceUnObjeto += espacio_naceUnObjeto;   // El backend nos avisa que nace un objetoEspacial
-            this.SizeChanged += MainWindow_SizeChanged;     // Nuestro ventana (this) nos avisa que el usuario cambió su tamaño.
+            MiEspacio.NaceUnObjeto += Espacio_NaceUnObjeto;   // El backend nos avisa que nace un objetoEspacial
+            this.SizeChanged += MainWindow_SizeChanged;     // Nuestra ventana (this) nos avisa que el usuario cambió su tamaño.
 
-            ponerMusica();
+            // Preparamos el timer.
+            DispatcherTimer t = new DispatcherTimer();
+            t.Interval = new TimeSpan(0, 0, 0, 0, TICKS_INTERVAL);
+            t.Tick += (s, e) =>
+            {
+                MiEspacio.Tickear(TICKS_INTERVAL/5);
+            };
+            t.IsEnabled = true;
+            t.Start();
+
+            PonerMusica();
         }
 
         void SpaceCanvas_MouseMove(object sender, MouseEventArgs e)
@@ -64,54 +93,44 @@ namespace RecursionPRO
             Point posicion = e.GetPosition(sender as Canvas);
             double x_nuevo = posicion.X;
             double y_nuevo = posicion.Y;
-            double distancia = Pigatoras(x_nuevo - x_anterior, y_nuevo - y_anterior);
 
-            // Movemos nuestra nave. Recordemos que Canvas también tiene cosas estáticas.
-            Canvas.SetLeft(nave, x_nuevo);
-            Canvas.SetTop(nave, y_nuevo);
-
-            // Le entregamos al backend lo que avanzamos.
-            espacio.entregarPixelesViajados(distancia);
-
-            // etc...
-            x_anterior = x_nuevo;
-            y_anterior = y_nuevo;
+            // Movemos nuestra nave. Recordemos que Canvas también tiene métodos estáticos.
+            Canvas.SetLeft(MiNave, x_nuevo);
+            Canvas.SetTop(MiNave, y_nuevo);
         }
 
         void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             // Le damos al backend la nueva dimensión del mundo.
-            double nuevoH = e.NewSize.Height;
-            double nuevoW = e.NewSize.Width;
-            espacio.cambiarTamano(nuevoW, nuevoH);
+            MiEspacio.AltoEspacio = e.NewSize.Height;
+            MiEspacio.LargoEspacio = e.NewSize.Width;
         }
 
         // El backend notifica y se llama a esto
-        void espacio_naceUnObjeto(ObjetoEspacial obj)
+        void Espacio_NaceUnObjeto(ObjetoEspacial obj)
         {
             CuerpoEspacial c = new CuerpoEspacial(obj);
-            c.BorrarCuerpoEspacial += c_BorrarCuerpoEspacial;
+
+            c.BorrarCuerpoEspacial += (CuerpoEspacial espacial) =>
+            {
+                SpaceCanvas.Children.Remove(espacial);
+            };
+
             SpaceCanvas.Children.Add(c);
             c.iniciarAnimacion();
         }
 
-        // El cuerpo notifica que morirá y pasa esto
-        void c_BorrarCuerpoEspacial(CuerpoEspacial obj)
-        {
-            SpaceCanvas.Children.Remove(obj);
-        }
-
-        private void ponerMusica()
+        private void PonerMusica()
         {
             MediaElement mediaElement1 = new MediaElement();
             SpaceCanvas.Children.Add(mediaElement1);
             mediaElement1.Source = new Uri(@"..\..\Sonidos\starfox cornelia.mid", UriKind.Relative);
-            mediaElement1.SpeedRatio = 1.0;
+            mediaElement1.SpeedRatio = 1.1;
             mediaElement1.LoadedBehavior = MediaState.Manual;
             mediaElement1.Play();
         }
 
-        private double Pigatoras(double x, double y)
+        private static double Pigatoras(double x, double y)
         {
             return Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
         }

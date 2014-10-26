@@ -22,69 +22,59 @@ namespace RecursionPRO
     /// </summary>
     public partial class CuerpoEspacial : UserControl
     {
-        // Evento que notifica al main.
+        /// <summary>
+        /// Evento que notifica cuando debe ser borrado el cuerpo espacial.
+        /// </summary>
         public event Action<CuerpoEspacial> BorrarCuerpoEspacial;
 
-        public CuerpoEspacial(ObjetoEspacial esp)
+        /// <summary>
+        /// Objeto del backend a representar
+        /// </summary>
+        private ObjetoEspacial ObjEspacial { get; set; }
+
+        public CuerpoEspacial(ObjetoEspacial objEspacial)
         {
             InitializeComponent();
-            Canvas.SetLeft(this, esp.X);
-            Canvas.SetTop(this, esp.Y);
-            this.Height = esp.H;
-            this.Width = esp.W;
+            this.ObjEspacial = objEspacial;
 
-            String imagenName = esp.ImagenNombre;
+            Canvas.SetLeft(this, objEspacial.X);
+            Canvas.SetTop(this, objEspacial.Y);
+            this.Height = objEspacial.H;
+            this.Width = objEspacial.W;
 
-            if (imagenName != null)
-            {
-                imagenCool.Stretch = Stretch.Uniform;
-                String pathImagen = @"/Espacio_v2;component/Imagenes/" + imagenName;
-                BitmapImage myBitmapImage = new BitmapImage();
-                myBitmapImage.BeginInit();
-                myBitmapImage.UriSource = new Uri(pathImagen, UriKind.Relative);
-                myBitmapImage.EndInit();
-                imagenCool.Source = myBitmapImage;
-            }
+            imagenCool.Stretch = Stretch.Uniform;
+            imagenCool.Source = new BitmapImage(new Uri(@"/Imagenes/" + objEspacial.NombreImagen, UriKind.Relative));
+
+            /* Otra manera de suscribirse a los eventos:
+             * Expresiones Lambda
+             * http://msdn.microsoft.com/es-es/library/bb397687.aspx
+             */
 
             // Subscripcion de eventos.
-            esp.cambioDeCoordenadas += esp_cambioDeCoordenadas;
-            esp.seraBorrado += esp_seraBorrado;
+            objEspacial.CambioDeCoordenadas += (x, y) =>
+            {
+                // No les gustaba que Python adivinara el tipo de variable?
+                Canvas.SetLeft(this, x);
+                Canvas.SetTop(this, y);
+            };
+
+            objEspacial.SeraBorrado += () =>
+            {
+                if (BorrarCuerpoEspacial != null)
+                    BorrarCuerpoEspacial(this);
+            };
         }
 
         public void iniciarAnimacion()
         {
-            imagenCool.Stretch = Stretch.Uniform;
-            imagenCool.RenderTransform = new RotateTransform();
-
-            Storyboard storyboard = new Storyboard();
-            storyboard.Duration = new Duration(TimeSpan.FromSeconds(10.0));
-            DoubleAnimation rotateAnimation = new DoubleAnimation()
-            {
-                From = 0,
-                To = 360 * 4, // 4 vueltas
-                Duration = storyboard.Duration
-            };
-
-            Storyboard.SetTarget(rotateAnimation, imagenCool);
-            Storyboard.SetTargetProperty(rotateAnimation, new PropertyPath("(UIElement.RenderTransform).(RotateTransform.Angle)"));
-
-            storyboard.Children.Add(rotateAnimation);
-            Resources.Add("Storyboard", storyboard);
-            ((Storyboard)Resources["Storyboard"]).Begin();
-        }
-
-
-        void esp_seraBorrado()
-        {
-            if(BorrarCuerpoEspacial != null)
-                BorrarCuerpoEspacial(this);
-        }
-
-
-        void esp_cambioDeCoordenadas(double arg1, double arg2)
-        {
-            Canvas.SetLeft(this, arg1 );
-            Canvas.SetTop(this, arg2);
+            DoubleAnimation animation = new DoubleAnimation();
+            animation.From = 0;
+            animation.To = 360;
+            animation.Duration = new Duration(TimeSpan.FromSeconds(3));
+            animation.RepeatBehavior = RepeatBehavior.Forever;
+            RotateTransform rotateTransform = new RotateTransform();
+            imagenCool.RenderTransform = rotateTransform;
+            rotateTransform.BeginAnimation(RotateTransform.AngleProperty, animation);
         }
     }
 }

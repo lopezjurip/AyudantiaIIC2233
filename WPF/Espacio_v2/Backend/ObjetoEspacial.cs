@@ -8,36 +8,45 @@ namespace Backend
 {
     public abstract class ObjetoEspacial
     {
-        /* El objeto espacial se mueve */
-        public event Action<double, double> cambioDeCoordenadas;
+        /// <summary>
+        /// Gatillado cuando el objeto se ha movido
+        /// </summary>
+        public event Action<double, double> CambioDeCoordenadas;
 
-        /* Morirá */
-        public event Action seraBorrado;
+        /// <summary>
+        /// Gatillado cuando el objeto debe morir.
+        /// </summary>
+        public event Action SeraBorrado;
 
-        /* Otras propiedades */
-        protected double x, y, w, h;
-        protected String imagenNombre;
+        /// <summary>
+        /// Posición en eje X (izquierda a derecha)
+        /// </summary>
+        public double X { get; protected set; }
 
-        /* getters */
-        public double X
+        /// <summary>
+        /// Posición en eje Y (arriba a abajo)
+        /// </summary>
+        public double Y { get; protected set; }
+
+        /// <summary>
+        /// Largo del objeto
+        /// </summary>
+        public double W { get; protected set; }
+
+        /// <summary>
+        /// Altura del objeto
+        /// </summary>
+        public double H { get; protected set; }
+
+        /// <summary>
+        /// El nombre de archivo y extensión.
+        /// </summary>
+        public abstract String NombreImagen { get; }
+          
+        internal ObjetoEspacial(double X, double Y)
         {
-            get { return x; }
-        }
-        public double Y
-        {
-            get { return y; }
-        }
-        public double W
-        {
-            get { return w; }
-        }
-        public double H
-        {
-            get { return h; }
-        }
-        public String ImagenNombre
-        {
-            get { return imagenNombre; }
+            this.X = X;
+            this.Y = Y;
         }
 
         // Cada subclase debe implementarlo
@@ -45,24 +54,17 @@ namespace Backend
         public abstract void Moverse(double cantidad);
 
         // Cosas tontas de NET que no nos deja gatillar el evento directamente desde la subclase ¬¬
-        protected void llamarEventoCambioCoordenadas(double x, double y)
+        protected void GatillarCambioCoordenadas(double x, double y)
         {
-            if(cambioDeCoordenadas != null)
-                cambioDeCoordenadas(x, y);
-        }
-
-        // Se usa despues de nacer (constructor)
-        public void setInicio(double x, double y)
-        {
-            this.x = x;
-            this.y = y;
+            if(CambioDeCoordenadas != null)
+                CambioDeCoordenadas(x, y);
         }
 
         // Avisa que sera borrado.
-        public void prepararParaBorrar()
+        public void PrepararParaBorrar()
         {
-            if (seraBorrado != null)
-                seraBorrado();
+            if (SeraBorrado != null)
+                SeraBorrado();
         }
     }
 }

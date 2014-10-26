@@ -9,83 +9,76 @@ namespace Backend
     public class Espacio
     {
         /* Parametros constantes de configuracion */
-        private const int maximosObjetosEnElEspacio = 200;
-        private const int crearObjetosCuandoSeItere = 100000000;
+        private const int MAX_SPACE_OBJECTS = 200;
+        private const int TICKS_TO_CREATE_OBJECT = 300;
         
-        /* Probabilidades */
-        private const int probabilidadPlaneta = 10;
-        private const int probabilidadMeteorito = 40;
-        private const int probabilidadEstrella = 40;
-        private const int probabilidadQuazar = 10;
+        /* Probabilidades, sumados dan 100 */
+        private const int PROBABILIDAD_PLANETA = 10;
+        private const int PROBABILIDAD_METEORITO = 40;
+        private const int PROBABILIDAD_ESTRELLA = 50;
 
         /* Variables importantes. */
-        private Random random;
-        private Queue<ObjetoEspacial> objetosDelFirmamento;
+        private Random Rand { get; set; }
+        private Queue<ObjetoEspacial> ObjetosDelFirmamento { get; set; }
         private double cuantoMeMuevoReset;
-        internal double spaceWidth, spaceHeight;
+
+        public double LargoEspacio { get; set; }
+        public double AltoEspacio { get; set; }
+
 
         /* Evento */
-        public event Action<ObjetoEspacial> naceUnObjeto;
+        public event Action<ObjetoEspacial> NaceUnObjeto;
 
         /* Constructor */
         public Espacio(double spaceWidth, double spaceHeight)
         {
-            this.spaceHeight = spaceHeight;
-            this.spaceWidth = spaceWidth;
-            random = new Random();
-            objetosDelFirmamento = new Queue<ObjetoEspacial>();
+            this.AltoEspacio = spaceHeight;
+            this.LargoEspacio = spaceWidth;
+            Rand = new Random();
+            ObjetosDelFirmamento = new Queue<ObjetoEspacial>();
         }
 
         /* Se llama cada vez que se mueve el mouse */
-        public void entregarPixelesViajados(double p)
+        public void Tickear(double valor)
         {
-            cuantoMeMuevoReset += p;
-            foreach (ObjetoEspacial esp in objetosDelFirmamento)
-                esp.Moverse(p);
+            cuantoMeMuevoReset += valor;
+            foreach (ObjetoEspacial esp in ObjetosDelFirmamento)
+                esp.Moverse(valor);
 
             /* Cuando llevamos más de "n" pixeles añadimos un objeto espacial. */
-            if (cuantoMeMuevoReset < crearObjetosCuandoSeItere)
+            if (cuantoMeMuevoReset < TICKS_TO_CREATE_OBJECT)
             {
+                double inicioX = Rand.NextDouble() * LargoEspacio;
+                double inicioY = Rand.NextDouble() * AltoEspacio;
+
                 /* Alocacion del nuevo objeto */
                 cuantoMeMuevoReset = 0;
                 ObjetoEspacial nuevo;
-                int numero = random.Next(0,101);
-                if (numero <= probabilidadPlaneta)
-                    nuevo = new Planeta(random);
-                else if (numero > probabilidadPlaneta && numero <= probabilidadMeteorito + probabilidadPlaneta)
-                    nuevo = new Meteorito(random);
-                else if (numero > probabilidadMeteorito + probabilidadPlaneta && numero <= probabilidadPlaneta + probabilidadMeteorito + probabilidadEstrella)
-                    nuevo = new Estrella(random);
-                else
-                    nuevo = new BlackHole(random);
+                int numero = Rand.Next(0,101);
+                if (numero <= PROBABILIDAD_PLANETA)
+                    nuevo = new Planeta(Rand, inicioX, inicioY);
+                else if (numero > PROBABILIDAD_PLANETA && numero <= PROBABILIDAD_METEORITO + PROBABILIDAD_PLANETA)
+                    nuevo = new Meteorito(Rand, inicioX, inicioY);
+                else 
+                    nuevo = new Estrella(Rand, inicioX, inicioY);
 
-                /* Por cosas de rendimiento. 
-                 * Hay un límite de objetos.
+                /* Por cosas de rendimiento, 
+                 * hay un límite de objetos.
                  */
-                if (objetosDelFirmamento.Count >= maximosObjetosEnElEspacio)
+                if (ObjetosDelFirmamento.Count >= MAX_SPACE_OBJECTS)
                 {
-                    ObjetoEspacial temp = objetosDelFirmamento.Dequeue();
-                    temp.prepararParaBorrar();
+                    ObjetoEspacial temp = ObjetosDelFirmamento.Dequeue();
+                    temp.PrepararParaBorrar();
                     temp = null;
                 }
-                /* Guardamos la referencia */
-                objetosDelFirmamento.Enqueue(nuevo);
 
-                /* Reset de las coords */
-                double inicioX = random.NextDouble() * spaceWidth;
-                double inicioY = random.NextDouble() * spaceHeight;
-                nuevo.setInicio(inicioX, inicioY);
+                /* Guardamos la referencia */
+                ObjetosDelFirmamento.Enqueue(nuevo);
 
                 /* Avisamos al MainWindow que nace un objeto */
-                if (naceUnObjeto != null) // check
-                    naceUnObjeto(nuevo);
+                if (NaceUnObjeto != null) // check
+                    NaceUnObjeto(nuevo);
             }
-        }
-
-        public void cambiarTamano(double W, double H)
-        {
-            spaceHeight = H;
-            spaceWidth = W;
         }
     }
 }

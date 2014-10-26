@@ -8,32 +8,33 @@ namespace Backend
 {
     class Meteorito : ObjetoEspacial
     {
-        private double constante;
-        private bool respectoX;
+        private bool RespectoX;
 
-        public Meteorito(Random r)
+        public override string NombreImagen
         {
-            imagenNombre = "meteor.png";
-            constante = r.NextDouble() +1;
-            respectoX = (r.Next(0, 2) == 0);
+            get { return "meteor.png"; }
+        }
 
-            w = h = r.Next(10, 20);
+        public Meteorito(Random r, double X, double Y) : base(X, Y)
+        {
+            RespectoX = (r.Next(2) == 0);
+            W = H = r.Next(10, 20);
         }
 
         public override void Moverse(double cantidad)
         {
-            if (respectoX)
+            if (RespectoX)
             {
-                x -= cantidad;
-                y += Math.Pow(cantidad, 2);
+                X -= cantidad;
+                Y += Math.Pow(cantidad, 2);
             }
             else
             {
-                y -= cantidad;
-                x += Math.Pow(cantidad, 2);
+                Y -= cantidad;
+                X += Math.Pow(cantidad, 2);
             }
 
-            llamarEventoCambioCoordenadas(x, y);
+            GatillarCambioCoordenadas(X, Y);
         }
     }
 }

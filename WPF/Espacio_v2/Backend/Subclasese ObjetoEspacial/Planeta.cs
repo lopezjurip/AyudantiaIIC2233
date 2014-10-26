@@ -8,32 +8,53 @@ namespace Backend
 {
     public class Planeta : ObjetoEspacial
     {
-        private int multiplicador;
-
-        public Planeta(Random r)
+        public enum TipoPlaneta
         {
-            switch (r.Next(0, 2))
+            ConAnillo,
+            Normal
+        }
+
+        private int Multiplicador { get; set; }
+        public TipoPlaneta Tipo { get; private set; }
+
+        public override string NombreImagen
+        {
+            get {
+                switch (Tipo)
+                {
+                    case TipoPlaneta.ConAnillo:
+                        return "planeta1.png";
+
+                    default:
+                        return "planeta2.png";
+                }
+            }
+        }
+
+        public Planeta(Random r, double X, double Y) : base(X, Y)
+        {
+            switch (r.Next(2))
             {
                 case 0:
-                    imagenNombre = "planeta1.png";
+                    Tipo = TipoPlaneta.ConAnillo;
                     break;
                 case 1:
-                    imagenNombre = "planeta2.png";
+                    Tipo = TipoPlaneta.Normal;
                     break;
                 default:
-                    imagenNombre = "planeta1.png";
+                    Tipo = TipoPlaneta.ConAnillo;;
                     break;
             }
-            multiplicador = r.Next(0, 4);
-            w = h = r.Next(40, 100);
+            Multiplicador = r.Next(0, 4);
+            W = H = r.Next(40, 100);
         }
 
         public override void Moverse(double cantidad)
         {
             cantidad /= 2;
-            y += Math.Sin(cantidad) * multiplicador ;
-            x += cantidad *-0.9; 
-            llamarEventoCambioCoordenadas(x, y);
+            Y += Math.Sin(cantidad) * Multiplicador ;
+            X += cantidad *-0.9; 
+            GatillarCambioCoordenadas(X, Y);
         }
     }
 }

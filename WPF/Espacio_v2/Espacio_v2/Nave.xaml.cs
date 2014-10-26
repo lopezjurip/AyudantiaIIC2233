@@ -20,38 +20,34 @@ namespace RecursionPRO
     /// </summary>
     public partial class Nave : UserControl
     {
-        bool activoCampoFuerza;
-
         public Nave()
         {
             InitializeComponent();
 
-            // PArte el escudo apagado
-            activoCampoFuerza = false;
+            // Parte con el escudo apagado
             CampoFuerza.Visibility = Visibility.Hidden;
+
+            /* Otra manera de suscribirse a los eventos:
+             * Expresiones Lambda
+             * http://msdn.microsoft.com/es-es/library/bb397687.aspx
+             */
 
             // Aciones que gatillan el uso del escudo.
-            ImagenNave.MouseLeftButtonDown += Nave_MouseLeftButtonDown;
-            ImagenNave.MouseLeftButtonUp += Nave_MouseLeftButtonUp;
-        }
+            ImagenNave.MouseLeftButtonDown += (sender, args) =>
+            {
+                CampoFuerza.Visibility = Visibility.Visible;
 
-        void Nave_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            CampoFuerza.Visibility = Visibility.Hidden;
-            activoCampoFuerza = false;
-        }
+                // ponemos un sonido corto
+                MediaPlayer mplayer = new MediaPlayer();
+                mplayer.Open(new Uri(@"..\..\Sonidos\shield.mp3", UriKind.Relative));
+                mplayer.Volume = 1;
+                mplayer.Play();
+            };
 
-        void Nave_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            CampoFuerza.Visibility = Visibility.Visible;
-            activoCampoFuerza = true;
-            
-            // ponemos un sonido corto
-            MediaPlayer mplayer = new MediaPlayer();
-            mplayer.Open(new Uri(@"..\..\Sonidos\shield.mp3", UriKind.Relative));
-            mplayer.Volume = 1;
-            mplayer.Play();
+            ImagenNave.MouseLeftButtonUp += (sender, args) =>
+            {
+                CampoFuerza.Visibility = Visibility.Hidden;
+            };
         }
-
     }
 }
