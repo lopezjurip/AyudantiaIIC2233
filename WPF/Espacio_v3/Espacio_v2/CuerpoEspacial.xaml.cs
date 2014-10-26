@@ -65,16 +65,27 @@ namespace RecursionPRO
             };
         }
 
-        public void iniciarAnimacion()
+        public void IniciarAnimacion()
         {
             DoubleAnimation animation = new DoubleAnimation();
             animation.From = 0;
             animation.To = 360;
-            animation.Duration = new Duration(TimeSpan.FromSeconds(3));
+            animation.Duration = new Duration(TimeSpan.FromMilliseconds(ObjEspacial.TiempoRotacion));
             animation.RepeatBehavior = RepeatBehavior.Forever;
             RotateTransform rotateTransform = new RotateTransform();
             imagenCool.RenderTransform = rotateTransform;
             rotateTransform.BeginAnimation(RotateTransform.AngleProperty, animation);
+        }
+
+        /// <summary>
+        /// Descripción.
+        /// </summary>
+        /// <param name="input1">Qué es el parámetro 1.</param>
+        /// <param name="input2">Qué es el parámetro 2.</param>
+        /// <returns>Qué significa el retorno.</returns>
+        public bool Metodo(int input1, String input2)
+        {
+            return true;
         }
     }
 }

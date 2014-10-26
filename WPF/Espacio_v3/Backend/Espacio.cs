@@ -20,16 +20,22 @@ namespace Backend
         /* Variables importantes. */
         private Random Rand { get; set; }
         private Queue<ObjetoEspacial> ObjetosDelFirmamento { get; set; }
-        private double cuantoMeMuevoReset;
+        private double ContadorTicks { get; set; }
 
         public double LargoEspacio { get; set; }
         public double AltoEspacio { get; set; }
 
 
-        /* Evento */
+        /// <summary>
+        /// Evento que avisa que se ha creado un objeto espacial.
+        /// </summary>
         public event Action<ObjetoEspacial> NaceUnObjeto;
 
-        /* Constructor */
+        /// <summary>
+        /// Constructor del espacio.
+        /// </summary>
+        /// <param name="spaceWidth">Largo actual de la ventana</param>
+        /// <param name="spaceHeight">Alto actual de la ventana</param>
         public Espacio(double spaceWidth, double spaceHeight)
         {
             this.AltoEspacio = spaceHeight;
@@ -38,23 +44,27 @@ namespace Backend
             ObjetosDelFirmamento = new Queue<ObjetoEspacial>();
         }
 
-        /* Se llama cada vez que se mueve el mouse */
+        /// <summary>
+        /// Llamar en cada tick con un valor relativo de cuanto se quiera mover.
+        /// </summary>
+        /// <param name="valor"></param>
         public void Tickear(double valor)
         {
-            cuantoMeMuevoReset += valor;
+            ContadorTicks += valor;
             foreach (ObjetoEspacial esp in ObjetosDelFirmamento)
                 esp.Moverse(valor);
 
-            /* Cuando llevamos más de "n" pixeles añadimos un objeto espacial. */
-            if (cuantoMeMuevoReset < TICKS_TO_CREATE_OBJECT)
+            /* Cada ciertos ticks creamos un nuevo objeto espacial. */
+            if (ContadorTicks < TICKS_TO_CREATE_OBJECT)
             {
                 double inicioX = Rand.NextDouble() * LargoEspacio;
                 double inicioY = Rand.NextDouble() * AltoEspacio;
 
                 /* Alocacion del nuevo objeto */
-                cuantoMeMuevoReset = 0;
+                ContadorTicks = 0;
                 ObjetoEspacial nuevo;
                 int numero = Rand.Next(0,101);
+
                 if (numero <= PROBABILIDAD_PLANETA)
                     nuevo = new Planeta(Rand, inicioX, inicioY);
                 else if (numero > PROBABILIDAD_PLANETA && numero <= PROBABILIDAD_METEORITO + PROBABILIDAD_PLANETA)
@@ -63,7 +73,7 @@ namespace Backend
                     nuevo = new Estrella(Rand, inicioX, inicioY);
 
                 /* Por cosas de rendimiento, 
-                 * hay un límite de objetos.
+                 * ponemos un límite de objetos.
                  */
                 if (ObjetosDelFirmamento.Count >= MAX_SPACE_OBJECTS)
                 {

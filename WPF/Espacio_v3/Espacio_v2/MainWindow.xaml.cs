@@ -15,7 +15,7 @@ using System.Windows.Shapes;
 using Backend;
 using System.Windows.Threading;
 
-// Patricio López (pelopez2@uc.cl)
+// Por Patricio López (pelopez2@uc.cl)
 
 namespace RecursionPRO
 {
@@ -117,7 +117,7 @@ namespace RecursionPRO
             };
 
             SpaceCanvas.Children.Add(c);
-            c.iniciarAnimacion();
+            c.IniciarAnimacion();
         }
 
         private void PonerMusica()

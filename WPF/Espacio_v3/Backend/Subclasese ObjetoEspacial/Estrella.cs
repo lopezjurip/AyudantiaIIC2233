@@ -16,11 +16,12 @@ namespace Backend
             get { return "star.png"; }
         }
 
-        public Estrella(Random generador, double X, double Y) : base(X, Y)
+        public Estrella(Random r, double X, double Y) : base(X, Y)
         {
-            Constante = generador.Next(-10, 10) * 0.0001;
-            Pendiente = generador.Next(-100, 100) * 0.00001;
-            W = H = generador.Next(5, 30);
+            Constante = r.Next(-10, 10) * 0.0001;
+            Pendiente = r.Next(-100, 100) * 0.00001;
+            W = H = r.Next(5, 30);
+            TiempoRotacion = r.Next(2500, 5000);
         }
 
         public override void Moverse(double cantidad)

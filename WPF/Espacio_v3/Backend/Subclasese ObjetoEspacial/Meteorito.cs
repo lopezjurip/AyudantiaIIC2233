@@ -19,6 +19,7 @@ namespace Backend
         {
             RespectoX = (r.Next(2) == 0);
             W = H = r.Next(10, 20);
+            TiempoRotacion = r.Next(5000, 7000);
         }
 
         public override void Moverse(double cantidad)

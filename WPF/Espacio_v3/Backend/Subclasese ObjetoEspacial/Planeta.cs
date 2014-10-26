@@ -45,6 +45,8 @@ namespace Backend
                     Tipo = TipoPlaneta.ConAnillo;;
                     break;
             }
+
+            TiempoRotacion = r.Next(1000, 10000);
             Multiplicador = r.Next(0, 4);
             W = H = r.Next(40, 100);
         }
