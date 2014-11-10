@@ -20,11 +20,11 @@ namespace Zombies
     /// </summary>
     public partial class Mapa : UserControl
     {
-        public Mapa(int n)
+        public Mapa(int dimension)
         {
             InitializeComponent();
 
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < dimension; i++)
             {
                 Grilla.ColumnDefinitions.Add(new ColumnDefinition());
                 Grilla.RowDefinitions.Add(new RowDefinition());

@@ -40,7 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApocalipsisZombie.cs" />
-    <Compile Include="ApocalipsisZombieSolucion.cs" />
+    <Compile Include="Coords.cs" />
     <Compile Include="ElementoDeMapa.cs" />
     <Compile Include="Jugador.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

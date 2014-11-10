@@ -26,36 +26,32 @@ namespace Zombies
 
     partial class Celda : UserControl
     {
-        protected ElementoDeMapa elemento;
+        protected ElementoDeMapa Elemento;
 
         public Celda(ElementoDeMapa elemento)
         {
             InitializeComponent();
 
-            this.elemento = elemento;
-            moverCelda(elemento.Coordenadas);
+            this.Elemento = elemento;
+            MoverACelda(elemento.Coordenadas);
         }
 
-        public void moverCelda(Coords newCoord)
+        public void MoverACelda(Coords newCoord)
         {
-            lock (elemento) // No estoy seguro si sea necesario
+            //Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+            Dispatcher.BeginInvoke(new Action(() =>
             {
-                //Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
-                Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    Grid.SetColumn(this, newCoord.X);
-                    Grid.SetRow(this, newCoord.Y);
-                }));
+                Grid.SetColumn(this, newCoord.X);
+                Grid.SetRow(this, newCoord.Y);
+            }));
 
-                // Aquí se ejecutaria dependiendo de cual Invoke usemos.
+            // Aquí se ejecutaria dependiendo de cual Invoke usemos.
 
-            }
             /* Invoke vs BeginInvoke
              * Invoke: la ejecuta y espera para continuar
-             * BeginInvoke: la ejecuta y sigue en el código.
+             * BeginInvoke: la ejecuta y sigue en el código sin esperar a que se complete.
              */
         }
-
     }
 
     /* CLASES HIJOS, sí, heredan de un usercontrol. */
@@ -64,12 +60,10 @@ namespace Zombies
     {
         public ZombieCell(Zombie z) : base(z)
         {
-            z.cambioDePosicion += moverAlZombie;
-        }
-
-        void moverAlZombie(Coords obj)
-        {
-            moverCelda(obj);
+            z.CambioDePosicion += (coord) =>
+            {
+                MoverACelda(coord);
+            };
         }
     }
 
@@ -78,14 +72,11 @@ namespace Zombies
         public JugadorCell(Jugador j) : base(j)
         {
             InitializeComponent();
-            j.seMueveJugador += j_seMueveJugador;
-            elipse.Fill = Brushes.Red;
+            j.SeMueveJugador += (coord) =>
+            {
+                MoverACelda(coord);
+            };
+            ElipsePersonaje.Fill = Brushes.Red;
         }
-
-        void j_seMueveJugador(Coords obj)
-        {
-            moverCelda(obj);
-        }
-
     }
 }

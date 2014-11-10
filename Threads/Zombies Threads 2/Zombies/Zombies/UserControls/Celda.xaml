@@ -6,7 +6,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <Ellipse Name="elipse" Fill="Blue"  Stroke="Black"  />
+        <Ellipse Name="ElipsePersonaje" Fill="Blue"  Stroke="Black"  />
 
     </Grid>
 </UserControl>
