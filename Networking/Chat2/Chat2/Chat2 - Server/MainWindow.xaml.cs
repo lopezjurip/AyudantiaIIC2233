@@ -15,6 +15,8 @@ using System.Windows.Shapes;
 using System.Threading;
 using Backend;
 
+// Por Patricio López J. (pelopez2@uc.cl)
+
 namespace Chat2___Server
 {
     /// <summary>
@@ -22,36 +24,55 @@ namespace Chat2___Server
     /// </summary>
     public partial class MainWindow : Window
     {
-        Server server;
+        Server Server { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
 
-            textBox_IP.IsReadOnly = true;
-            textBox_Port.IsReadOnly = true;
+            IPTextBox.IsReadOnly = true;
+            PortTextBox.IsReadOnly = true;
 
-            server = new Server();
-            server.MensajeRecibido += server_MensajeRecibido;
-            server.UsuarioConectado += server_UsuarioConectado;
+            Server = new Server();
+
+            Server.MensajeRecibido += (texto) =>
+            {
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    StackPanelLog.Children.Add(new TextBlock { Text = "-> " + texto });
+                }));
+            };
+
+            Server.UsuarioConectado += () =>
+            {
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    StackPanelLog.Children.Add(new TextBlock { Text = "Usuario conectado", Foreground = Brushes.Blue });
+                }));
+            };
 
             // #YoPrometíNuncaBloquearElThreadPrincipal
-            new Thread(delegate()
+            IniciarServidor();
+        }
+
+        private void IniciarServidor()
+        {
+            String ip = Server.GetLocalIP();
+            int port = Server.PUERTO;
+
+            new Thread(() =>
             {
-                bool exito = server.StartServer();
+                bool exito = Server.StartServer();
                 if (exito)
                 {
-                    String ip = Server.GetLocalIP();
-                    int port = Server.PUERTO;
-
                     if (ip != null)
                     {
                         Dispatcher.BeginInvoke(new Action(() =>
                         {
-                            textBox_IP.Text = ip;
-                            textBox_Port.Text = "" + port;
+                            IPTextBox.Text = ip;
+                            PortTextBox.Text = "" + port;
                             Clipboard.SetText(ip);
-                            server_MensajeRecibido("Se ha copiado la dirección IP al portapapeles.");
+                            StackPanelLog.Children.Add(new TextBlock { Text = "Se ha copiado la dirección IP al portapapeles." });
                         }));
                     }
                 }
@@ -65,30 +86,6 @@ namespace Chat2___Server
                     }));
                 }
             }).Start();
-        }
-
-        void server_Log(string obj)
-        {
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                stackPanel_log.Children.Add(new TextBlock { Text = obj, Foreground = Brushes.DarkGray });
-            }));
-        }
-
-        void server_UsuarioConectado()
-        {
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                stackPanel_log.Children.Add(new TextBlock { Text = "Usuario conectado", Foreground = Brushes.Blue });
-            }));
-        }
-
-        void server_MensajeRecibido(string obj)
-        {
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                stackPanel_log.Children.Add(new TextBlock { Text = "-> " +obj });
-            }));
         }
     }
 }

@@ -7,13 +7,15 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+// // Por Patricio López J. (pelopez2@uc.cl)
+
 namespace Backend
 {
     public class Client
     {
         // Campos importantes.
-        private Socket clientSocket;
-        private Thread EscucharServidorThread;
+        private Socket SocketCliente { get; set; }
+        private Thread EscucharServidorThread { get; set; }
 
         // Eventos.
         public event Action<String> MensajeRecibido;
@@ -33,8 +35,8 @@ namespace Backend
             try
             {
                 Ep = new IPEndPoint(IPAddress.Parse(IP), Puerto);
-                clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                clientSocket.Connect(Ep);
+                SocketCliente = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                SocketCliente.Connect(Ep);
             }
             catch (ArgumentOutOfRangeException)
             {
@@ -64,7 +66,7 @@ namespace Backend
 
         private void EscucharServidor()
         {
-            while (clientSocket != null)
+            while (SocketCliente != null)
             {
                 string mensaje;
                 byte[] dataBuffer;
@@ -74,7 +76,7 @@ namespace Backend
                 {
                     dataBuffer = new byte[256];
                     // No queremos bloquear el thread principal, por eso esta linea se ejecuta en un thread separado.
-                    largo = clientSocket.Receive(dataBuffer);
+                    largo = SocketCliente.Receive(dataBuffer);
                     mensaje = Encoding.UTF8.GetString(dataBuffer, 0, largo);
 
                     // El servidor nos mandó un mensaje.
@@ -95,7 +97,7 @@ namespace Backend
             try
             {
                 byte[] data = Encoding.UTF8.GetBytes(s);
-                clientSocket.Send(data);
+                SocketCliente.Send(data);
             }
             catch (SocketException)
             {

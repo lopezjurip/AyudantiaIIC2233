@@ -15,6 +15,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Backend;
 
+// Por Patricio López J. (pelopez2@uc.cl)
+
 namespace Chat2___Client
 {
     /// <summary>

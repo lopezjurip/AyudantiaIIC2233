@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+// Por Patricio López J. (pelopez2@uc.cl)
+
 namespace Backend
 {
     public class Server
@@ -18,9 +20,9 @@ namespace Backend
 
         
         // Campos principales.
-        private Socket serverSocket;                            // El socket principal del servidor.
-        private List<Socket> clientes;                          // Lista de los Sockets de los clientes.
-        private Queue<String> mensajesQueue;                    // Cola de mensajes pendientes para ser enviados. 
+        private Socket SocketServer { get; set; }               // El socket principal del servidor.
+        private List<Socket> Clientes { get; set; }             // Lista de los Sockets de los clientes.
+        private Queue<String> ColaMensajes { get; set; }        // Cola de mensajes pendientes para ser enviados. 
 
 
         // Eventos
@@ -31,8 +33,8 @@ namespace Backend
         // Constructor
         public Server()
         {
-            clientes = new List<Socket>();
-            mensajesQueue = new Queue<String>();
+            Clientes = new List<Socket>();
+            ColaMensajes = new Queue<String>();
         }
 
         // Intentamos iniciar el servidor. 
@@ -43,22 +45,17 @@ namespace Backend
             try
             {
                 Ep = new IPEndPoint(IPAddress.Any, PUERTO);
-                serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                serverSocket.Bind(Ep);
-                serverSocket.Listen(CONEXIONESMAXIMAS);
+                SocketServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                SocketServer.Bind(Ep);
+                SocketServer.Listen(CONEXIONESMAXIMAS);
             }
             catch (SocketException)
             {
                 return false;
             }
 
-            Thread RecibirConexionesThread = new Thread(RecibirConexiones);
-            RecibirConexionesThread.IsBackground = true;
-            RecibirConexionesThread.Start();
-
-            Thread ProcesadorDeMensajesThread = new Thread(ProcesadorDeMensajes);
-            ProcesadorDeMensajesThread.IsBackground = true;
-            ProcesadorDeMensajesThread.Start();
+            IniciarRecibirConexionesThread();
+            IniciarProcesadorDeMensajesThread();
 
             return true;
         }
@@ -66,9 +63,9 @@ namespace Backend
         // Difundimos un mensaje a todos los clientes. 
         private void DifundirMensaje(String mensaje)
         {
-            lock (clientes)
+            lock (Clientes)
             {
-                foreach (Socket socket in clientes)
+                foreach (Socket socket in Clientes)
                 {
                     byte[] mensajeBytes = Encoding.UTF8.GetBytes(mensaje);
                     socket.Send(mensajeBytes);
@@ -77,86 +74,98 @@ namespace Backend
         }
 
         // Se encarga de repartir los mensajes en cola.
-        private void ProcesadorDeMensajes()
+        private void IniciarProcesadorDeMensajesThread()
         {
-            while (mensajesQueue != null)
+            Thread ProcesadorDeMensajesThread = new Thread(() =>
             {
-                if (mensajesQueue.Count != 0)
+                while (ColaMensajes != null)
                 {
-                    String mensaje = mensajesQueue.Dequeue();
-                    DifundirMensaje(mensaje);
-                    if (MensajeRecibido != null)
-                        MensajeRecibido(mensaje);
-                }
-                Thread.Sleep(SLEEPTIME);
-            }
-            // Sería más bonito utilizar un ResetEvent. 
-        }
-
-        private void RecibirConexiones()
-        {
-            while (clientes.Count != CONEXIONESMAXIMAS)
-            {
-                // Intentaremos encontrar a un cliente.
-                Socket client = null;
-
-                try
-                {
-                    // Intentando encontrar alguna conexión entrante...
-
-                    // Si no ejecutamos esta linea en un thread separado vamos a bloquear el programa.
-                    client = serverSocket.Accept();
-
-                    // Cliente conectado!
-
-                    // Lo agregamos a nuestra lista.
-                    lock (clientes) // Quizás este lock esté de más.
+                    if (ColaMensajes.Count != 0)
                     {
-                        clientes.Add(client);
+                        String mensaje = ColaMensajes.Dequeue();
+                        DifundirMensaje(mensaje);
+                        if (MensajeRecibido != null)
+                            MensajeRecibido(mensaje);
                     }
-
-                    // Avisamos
-                    if (UsuarioConectado != null)
-                        UsuarioConectado();
-
-                    // Iniciamos un Thread parametrizado que se dedicará a escuchar por este socket.
-                    Thread EscucharClienteThread = new Thread(EscucharCliente);
-                    EscucharClienteThread.IsBackground = true;
-                    EscucharClienteThread.Start(client);
-
+                    Thread.Sleep(SLEEPTIME);
                 }
-                catch (SocketException)
-                {
-                   
-                }
-            }
+                // Sería más bonito utilizar un ResetEvent. 
+            });
+
+            ProcesadorDeMensajesThread.IsBackground = true;
+            ProcesadorDeMensajesThread.Start();
         }
 
-        private void EscucharCliente(object obj)
+        private void IniciarRecibirConexionesThread()
         {
-            Socket socket = obj as Socket;
-
-            while (socket != null)
+            Thread RecibirConexionesThread = new Thread(() =>
             {
-                string mensaje;
-                byte[] dataBuffer;
-                int largo;
-
-                try
+                while (Clientes.Count != CONEXIONESMAXIMAS)
                 {
-                    dataBuffer = new byte[256];
-                    // Debemos ejecutar esto en un thread o bloquearemos el thread principal (el que tiene la GUI).
-                    largo = socket.Receive(dataBuffer);  // Este método se queda esperando hasta recibir algo.
-                    mensaje = Encoding.UTF8.GetString(dataBuffer, 0, largo);
+                    // Intentaremos encontrar a un cliente.
+                    Socket client = null;
+                    try
+                    {
+                        // Intentando encontrar alguna conexión entrante...
 
-                    // Mandamos el mensaje a la cola de salida.
-                    mensajesQueue.Enqueue(mensaje);
+                        // Si no ejecutamos esta linea en un thread separado vamos a bloquear el programa.
+                        client = SocketServer.Accept();
+
+                        // Cliente conectado!
+
+                        // Lo agregamos a nuestra lista.
+                        lock (Clientes) // Quizás este lock esté de más.
+                        {
+                            Clientes.Add(client);
+                        }
+
+                        // Avisamos
+                        if (UsuarioConectado != null)
+                            UsuarioConectado();
+
+                        // Iniciamos un Thread parametrizado que se dedicará a escuchar por este socket.
+                        IniciarEscucharClienteThread(client);
+                    }
+                    catch (SocketException)
+                    {
+
+                    }
                 }
-                catch (SocketException)
+            });
+
+            RecibirConexionesThread.IsBackground = true;
+            RecibirConexionesThread.Start();
+        }
+
+        private void IniciarEscucharClienteThread(Socket socket)
+        {
+            Thread EscucharClienteThread = new Thread(() =>
+            {
+                while (socket != null)
                 {
-                    
+                    string mensaje;
+                    byte[] dataBuffer;
+                    int largo;
+
+                    try
+                    {
+                        dataBuffer = new byte[256];
+                        // Debemos ejecutar esto en un thread o bloquearemos el thread principal (el que tiene la GUI).
+                        largo = socket.Receive(dataBuffer);  // Este método se queda esperando hasta recibir algo.
+                        mensaje = Encoding.UTF8.GetString(dataBuffer, 0, largo);
+
+                        // Mandamos el mensaje a la cola de salida.
+                        ColaMensajes.Enqueue(mensaje);
+                    }
+                    catch (SocketException)
+                    {
+
+                    }
                 }
-            }
+            });
+
+            EscucharClienteThread.IsBackground = true;
+            EscucharClienteThread.Start();
         }
 
 
@@ -166,18 +175,10 @@ namespace Backend
             // ipconfig 
             // Y ver cuál es nuestra dirección IP local.
 
-            IPHostEntry host;
-            string localIP = "";
-            host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (IPAddress ip in host.AddressList)
-            {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    localIP = ip.ToString();
-                    break;
-                }
-            }
-            return localIP;
+            IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
+
+            IPAddress dir = host.AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
+            return dir.ToString();
         }
     }
 }

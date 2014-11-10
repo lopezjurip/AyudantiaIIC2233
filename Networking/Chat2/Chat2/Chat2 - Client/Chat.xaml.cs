@@ -20,42 +20,40 @@ namespace Chat2___Client
     /// </summary>
     public partial class Chat : Window
     {
-        Client cliente;
+        private Client Cliente { get; set; }
 
         public Chat(Client cliente)
         {
             InitializeComponent();
-            textBox_input.Focus();
+            InputText.Focus();
 
-            this.cliente = cliente;
-            this.cliente.MensajeRecibido += cliente_MensajeRecibido;
-
-            button_send.Click += button_send_Click;
-            textBox_input.KeyUp += textBox_input_KeyUp;
-        }
-
-        void textBox_input_KeyUp(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
+            this.Cliente = cliente;
+            this.Cliente.MensajeRecibido += (texto) =>
             {
-                TextBox t = (TextBox)sender;
-                cliente.EnviarMensaje(t.Text);
-                t.Text = "";
-            }
-        }
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    StackPanelMensajes.Children.Add(new TextBlock { Text = "-> " + texto });
+                }));
+            };
 
-        void button_send_Click(object sender, RoutedEventArgs e)
-        {
-            cliente.EnviarMensaje(textBox_input.Text);
-            textBox_input.Text = "";
-        }
-
-        void cliente_MensajeRecibido(string obj)
-        {
-            Dispatcher.BeginInvoke(new Action(() =>
+            SendButton.Click += (s, e) =>
             {
-                stackPanel_mensajes.Children.Add(new TextBlock { Text = "-> " +obj});
-            }));
+                EnviarMensaje();
+            };
+
+            InputText.KeyUp += (s, e) =>
+            {
+                if (e.Key == Key.Enter)
+                {
+                    EnviarMensaje();
+                }
+            };
+        }
+
+        private void EnviarMensaje()
+        {
+            Cliente.EnviarMensaje(InputText.Text);
+            InputText.Text = "";
         }
     }
 }

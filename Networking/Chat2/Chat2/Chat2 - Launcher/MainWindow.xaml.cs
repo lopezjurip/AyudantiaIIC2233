@@ -16,6 +16,8 @@ using System.Windows.Shapes;
 using Chat2___Client;   // Importamos los otros proyectos tal y como se suele hacer con el backend.
 using Chat2___Server;   // Revisar las referencias de Chat2 - Launcher para verlo. 
 
+// Por Patricio López J. (pelopez2@uc.cl)
+
 namespace Chat2___Launcher
 {
     /// <summary>
